@@ -17,7 +17,13 @@ current_folder = uri.path.split('/').last
 page = Nokogiri::HTML(open(original_url))
 
 page_head_title = page.css("title")[0].text
-page_head_description = page.at("meta[name=description]")['content'] || page.css("h2")[0].text
+page_head_description = page.at("meta[name=description]")
+
+unless page_head_description == nil
+  page_head_description = page_head_description['content']
+else
+  page_head_description = page.css("h2")[0].text
+end
 
 page_body_title = page.css("h1")[0].text
 page_body_description = page.css("h2")[0].text
