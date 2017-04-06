@@ -75,13 +75,13 @@ unless page_body_html == nil
   page_body_html.gsub!(/<a href="tel:[^>]+>(.+?)<\/a>/, '\1')
 
   # Format Phone Numbers
-  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong>\1.\2.\3</strong>')
+  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?(-|\.)?\s?(\d{3})(-|\.)?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\3-\5">\1.\3.\5</a></strong>')
 
   # Remove Updated or Rev number
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
 
   # Removes Duplicate strong tags
-  page_body_html.gsub!(/<(strong)[^>]*><\1[^>]*>(.*?)<\/\1><\/\1>/, '<\1>\2</\1>')
+  page_body_html.gsub!(/<(strong)[^>]*>\s*?<\1[^>]*>(.*?)<\/\1>\s*?<\/\1>/, '<\1>\2</\1>')
 
   # Remove Empty tags that are not iframe
   page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>[[:space:]]*<\/\1>/, '')
