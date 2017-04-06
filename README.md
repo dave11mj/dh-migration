@@ -2,6 +2,7 @@
 A ruby script to aid migrating legacy content from old URLs.
 
 ### Workflow steps
+0. Make sure the **content editor** template matches the template on the **google sheet**
 1. On the **google sheet** mark the item you'll be working on with your name, and _In Progress_ status.
 2. Open the _Old URL_ you'll be migrating.
 3. Open **Terminal** and change to the directory with **manually-migrate.rb** (`cd /path/to/folder/dh_migration`)
