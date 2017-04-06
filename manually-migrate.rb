@@ -77,8 +77,8 @@ unless page_body_html == nil
   # Format Phone Numbers
   page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong>\1.\2.\3</strong>')
 
-  # Remove Updated number
-  page_body_html.gsub!(/\(Updated \d+\)/, '')
+  # Remove Updated or Rev number
+  page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
 
   # Removes Duplicate strong tags
   page_body_html.gsub!(/<(strong)[^>]*><\1[^>]*>(.*?)<\/\1><\/\1>/, '<\1>\2</\1>')
