@@ -90,6 +90,9 @@ unless page_body_html == nil
   # Note: if there was a 3rd lv of nested empty tags I give up ...
   page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>[[:space:]]*<\/\1>/, '')
 
+  # Wraps any block level text without tags on <p>
+  page_body_html.gsub!(/(<\/(p|ul)>)([^<]+?)(<(p|ul)[^>]*>)/, '\1<p>\3</p>\4')
+
 end
 
 content_html = "<style>.manually-migrated ul { padding-left: 40px; } .manually-migrated img { display:block; float: right; clear: right; margin: 0 0 20px 20px; }</style><div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
