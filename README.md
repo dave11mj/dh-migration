@@ -1,6 +1,15 @@
 ## Manual migration script
 A ruby script to aid migrating legacy content from old URLs.
 
+### Guidelines enforced by script
+- `<h2>` header directly under `<h1>` should be regular text size
+- No inline styles (colors, font-size, text-align, etc)
+- Phone numbers should be formatted bold with tel link (`<strong><a href="tel:">`)
+- Any `<h2>` or `<h1>` should be migrated as `<h3>`
+- Remove _(Updated 101316)_ or _(Rev. 101316)_ from content
+- Inline small images should be floated right
+- Bullet lists should have a padding-left of `40px`
+
 ### Workflow steps
 0. Make sure the **content editor** template matches the template on the **google sheet**
 1. On the **google sheet** mark the item you'll be working on with your name, and _In Progress_ status.
