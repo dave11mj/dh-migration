@@ -16,7 +16,7 @@ current_folder = uri.path.split('/').last
 
 page = Nokogiri::HTML(open(original_url))
 
-page_head_title = page.css("title")[0].text
+page_head_title = page.css("title")[0].text.strip!
 page_head_description = page.at("meta[name=description]")
 
 unless page_head_description == nil
@@ -30,7 +30,7 @@ page.xpath('@style|.//@style').remove
 
 page_body_title = page.css("h1")[0].text
 page_body_description = page.css("h2")[0].text
-page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/\n/, '')
+page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
 
 inline_images = []
 
@@ -49,7 +49,7 @@ unless page_body_html == nil
   page_body_html = Nokogiri::HTML::DocumentFragment.parse(page_body_html).to_s
 
   # Remove line breaks
-  page_body_html.gsub!(/\n/, '')
+  page_body_html.gsub!(/[\n\r]+/, '')
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
@@ -75,10 +75,13 @@ unless page_body_html == nil
   page_body_html.gsub!(/<img.*?>/, '')
 
   # Remove Tel Links
-  page_body_html.gsub!(/<a href="tel:[^>]+>(.+?)<\/a>/, '\1')
+  page_body_html.gsub!(/<a href="(tel:|\d)[^>]+>(.+?)<\/a>/, '\2')
 
   # Format Phone Numbers
-  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?(-|\.)?\s?(\d{3})(-|\.)?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\3-\5">\1.\3.\5</a></strong>')
+  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+
+  # Exception regex for phone numbers already with dot format
+  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Remove Updated or Rev number
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
