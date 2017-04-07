@@ -40,7 +40,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/id="?[^"\s]*"?/, '')
 
   # Remove <br> tags
-  page_body_html.gsub!(/<br\/?>/, '')
+  # page_body_html.gsub!(/<br\/?>/, '')
 
   # Validates HTML for unclosed tags
   page_body_html = Nokogiri::HTML::DocumentFragment.parse(page_body_html).to_s
