@@ -18,7 +18,7 @@ html = open(original_url)
 page = Nokogiri::HTML(html.read)
 page.encoding = 'utf-8'
 
-page_head_title = page.css("title")[0].text.strip!
+page_head_title = page.css("title")[0].text
 page_head_description = page.at("meta[name=description]")
 
 unless page_head_description == nil
