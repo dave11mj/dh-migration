@@ -92,7 +92,7 @@ unless page_body_html == nil
 
 end
 
-content_html = "<style>.manually-migrated ul { padding-left: 40px; } .manually-migrated img { display:block; float: right; clear: right; margin: 0 20px 20px; }</style><div class='manually-migrated'><h2>#{page_body_description}</h2>#{page_body_html}</div>"
+content_html = "<style>.manually-migrated ul { padding-left: 40px; } .manually-migrated img { display:block; float: right; clear: right; margin: 0 0 20px 20px; }</style><div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
 
 console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
                 "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
