@@ -84,11 +84,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/<(strong)[^>]*>\s*?<\1[^>]*>(.*?)<\/\1>\s*?<\/\1>/, '<\1>\2</\1>')
 
   # Remove Empty tags that are not iframe
-  page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>[[:space:]]*<\/\1>/, '')
-
-  # Remove Empty tags that were nested inside empty tags
-  # Note: if there was a 3rd lv of nested empty tags I give up ...
-  page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>[[:space:]]*<\/\1>/, '')
+  page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>([[:space:]]|&nbsp;|<[^>]+>)*<\/\1>/, '')
 
   # Wraps any block level text without tags on <p>
   page_body_html.gsub!(/(<\/(p|ul)>)([^<]+?)(<(p|ul)[^>]*>)/, '\1<p>\3</p>\4')
