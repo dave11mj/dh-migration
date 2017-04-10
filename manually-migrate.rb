@@ -7,7 +7,8 @@ require 'optparse'
 
 # Adds support for optional flags to the script
 options = {
-  :content_html_script => false
+  :content_html_script => false,
+  :copy_to_clipboard => true
 }
 
 OptionParser.new do |opts|
@@ -15,6 +16,10 @@ OptionParser.new do |opts|
 
   opts.on("-o", "--content-html-script", "Adds script to paste HTML inside content editor (default: false)") do |v|
     options[:content_html_script] = v
+  end
+
+  opts.on("-c", "--copy-to-clipboard [true]", TrueClass, "Copies console script to clipboard (default: true)") do |v|
+    options[:copy_to_clipboard] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 end.parse!
 
@@ -181,9 +186,13 @@ def pbcopy(input)
   str
 end
 
-begin
-  pbcopy(console_script)
-  puts "Copied Console Script to clipboard\n\n"
-rescue
+if options[:copy_to_clipboard]
+  begin
+    pbcopy(console_script)
+    puts "Copied Console Script to clipboard\n\n"
+  rescue
+    puts "Done\n\n"
+  end
+else
   puts "Done\n\n"
 end
