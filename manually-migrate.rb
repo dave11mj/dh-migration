@@ -107,7 +107,13 @@ unless page_body_html == nil
 
 end
 
-content_html = "<style>.manually-migrated ul { padding-left: 40px; } .manually-migrated img { display:block; float: right; clear: right; margin: 0 0 20px 20px; }</style><div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
+styles = "<style>"\
+          ".manually-migrated ul { padding-left: 40px; } "\
+          ".manually-migrated img { display:block; float: right; clear: right; margin: 0 0 20px 20px; } "\
+          "@media (max-width: 750px) { .manually-migrated img { display:block; float: none; clear: both; margin: 20px auto; max-width: 100%; } } "\
+          "</style>"
+
+content_html = "#{styles} <div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
 
 console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
                 "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
