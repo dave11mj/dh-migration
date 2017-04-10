@@ -2,9 +2,25 @@ require 'open-uri'
 require 'uri'
 require 'fileutils'
 require 'nokogiri'
+require 'optparse'
+
+
+# Adds support for optional flags to the script
+options = {
+  :content_html_script => false
+}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: manually-migrate.rb [options]"
+
+  opts.on("-o", "--content-html-script", "Adds script to paste HTML inside content editor (default: false)") do |v|
+    options[:content_html_script] = v
+  end
+end.parse!
+
 
 print "Original url: "
-original_url = gets.strip
+original_url = STDIN.gets.strip
 
 uri = URI::parse(original_url)
 
@@ -120,11 +136,27 @@ styles = "<style>"\
 
 content_html = "#{styles} <div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
 
+# Script used to open 'edit html' editor and paste content html inside of it
+if options[:content_html_script]
+  console_content_html_script = "jQuery(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
+  "(function updateIframe() { "\
+      "var $contentHtml = jQuery('#jqueryModalDialogsFrame').contents().find('#scContentIframeId0').contents().find('textarea'); "\
+      "if($contentHtml.length < 1) { "\
+          "setTimeout(updateIframe, 500); "\
+      "} else { "\
+        "$contentHtml.val('#{content_html.gsub(/'/, "\\\\'")}');"\
+      "} "\
+  "})();\n"
+else
+  console_content_html_script = ""
+end
+
 console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
                 "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
                 "jQuery(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{page_head_description.gsub(/'/, "\\\\'")}');\n"\
                 "jQuery(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
-                "jQuery(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"
+                "jQuery(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
+                "#{console_content_html_script}"
 
 notes = "###Original URL\n"\
         "#{original_url}\n\n"\
