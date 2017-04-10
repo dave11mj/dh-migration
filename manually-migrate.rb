@@ -62,14 +62,11 @@ end
 
 unless page_body_html == nil
 
-  # Removes wrapping HTML_CONTENT span tags
-  page_body_html.gsub!(/(<span id="?HTML_CONTENT[^>]+>|<\/span>$)/, '')
-
   # Remove IDs
   page_body_html.gsub!(/id="?[^"\s]*"?/, '')
 
-  # Remove <br> tags
-  # page_body_html.gsub!(/<br\/?>/, '')
+  # Remove <span> tags
+  page_body_html.gsub!(/(<\/?span[^>]+>)/, '')
 
   # Validates HTML for unclosed tags
   page_body_html = Nokogiri::HTML::DocumentFragment.parse(page_body_html).to_s
@@ -124,7 +121,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>([[:space:]]|&nbsp;|<[^>]+>)*<\/\1>/, '')
 
   # Wraps any block level text without tags on <p>
-  page_body_html.gsub!(/(<\/(p|ul)>)([^<]+?)(<(p|ul)[^>]*>)/, '\1<p>\3</p>\4')
+  page_body_html.gsub!(/(<\/(p|ul|h3)>)([^<]+?)(<(p|ul|h3)[^>]*>)/, '\1<p>\3</p>\4')
 
 end
 
