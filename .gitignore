@@ -31,3 +31,6 @@ downloads/
 
 # Ignore video tutorial
 tutorial-for-manually-migrate.mov
+
+# Ignore temporary ruby file used for debug
+tmp.rb

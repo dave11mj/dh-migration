@@ -65,8 +65,13 @@ unless page_body_html == nil
   images = page_body_html.scan(/<img.*?>/)
   unless images == nil
     images.each.with_index(1) do |image, index|
-      src = image.match(/(?<=src=")[^"]+/)
-      image_url = "#{uri.scheme}://#{uri.host}#{src}"
+      src = image.match(/(?<=src=")[^"]+/).to_s
+
+      if src.match(/https?:\/\//)
+        image_url = src
+      else
+        image_url = "#{uri.scheme}://#{uri.host}#{src}"
+      end
 
       inline_images << "file: inline-#{current_folder}-photo-#{index}.jpg — alt: #{(image.match(/(?<=alt=")[^"]+/) || 'none')}\n"
 
