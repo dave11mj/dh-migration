@@ -2,9 +2,10 @@
 A ruby script to aid migrating legacy content from old URLs.
 
 ### Flags / Options
-- `--help`, alias[`-h`]: Provides available options and usages on the command line
-- `--content-html-script`, alias[`-o`]: Adds script to paste HTML inside content editor (default: false)
-- `--copy-to-clipboard`, alias[`-c`]: Copies console script to clipboard (default: true)
+- **`--help` alias[`-h`]:** Provides available options and usages on the command line
+- **`--content-html-script` alias[`-o`]:** Adds script to paste HTML inside content editor (default: false)
+- **`--copy-to-clipboard` alias[`-c`]:** Copies console script to clipboard (default: true)
+- **`--original-url` alias[`-u`]:** Original url to migrate without user input (default: user input)
 
 ### Guidelines enforced by script
 - `<h2>` header directly under `<h1>` should be regular text size
@@ -31,6 +32,3 @@ A ruby script to aid migrating legacy content from old URLs.
 12. Add any missing line breaks _(shift + enter)_
 13. Pick a header image for your content.
 14. Hit _Publish_ and go back to the google sheet to mark it _Complete_
-
-
-_Note: Contact @dave on slack for a tutorial video_

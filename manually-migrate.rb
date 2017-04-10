@@ -8,7 +8,8 @@ require 'optparse'
 # Adds support for optional flags to the script
 options = {
   :content_html_script => false,
-  :copy_to_clipboard => true
+  :copy_to_clipboard => true,
+  :original_url => nil
 }
 
 OptionParser.new do |opts|
@@ -21,11 +22,18 @@ OptionParser.new do |opts|
   opts.on("-c", "--copy-to-clipboard [true]", TrueClass, "Copies console script to clipboard (default: true)") do |v|
     options[:copy_to_clipboard] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
+
+  opts.on("-u", "--original-url [url]", "Original url to migrate without user input (default: user input)") do |v|
+    options[:original_url] = v
+  end
 end.parse!
 
-
-print "Original url: "
-original_url = STDIN.gets.strip
+if options[:original_url] == nil
+  print "Original url: "
+  original_url = STDIN.gets.strip
+else
+  original_url = options[:original_url]
+end
 
 uri = URI::parse(original_url)
 
