@@ -36,6 +36,14 @@ page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
 
 inline_images = []
 
+unless page_body_description == nil
+  # Format Phone Numbers on Description
+  page_body_description.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+
+  # Exception regex for phone numbers already with dot format
+  page_body_description.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+end
+
 unless page_body_html == nil
 
   # Removes wrapping HTML_CONTENT span tags
