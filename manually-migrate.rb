@@ -93,37 +93,6 @@ unless page_body_html == nil
   # Remove line breaks
   page_body_html.gsub!(/[\n\r]+/, '')
 
-  # Find and save images
-  images = page_body_html.scan(/<img.*?>/)
-  unless images == nil
-    images.each.with_index(1) do |image, index|
-      src = image.match(/(?<=src=")[^"]+/).to_s
-
-      if src.match(/https?:\/\//)
-        image_url = src
-      else
-        image_url = "#{uri.scheme}://#{uri.host}#{src}"
-      end
-
-      open(image_url) do |f|
-        if options[:base64_img]
-          page_body_html.sub!(/src=["']?(?!data)[^"'\s\/>]*["']?(\s|\/|>)/, "src='data:image/jpeg;base64, #{Base64.encode64(f.read).gsub(/\n/, '')}'\1")
-        else
-          File.open("inline-#{current_folder}-photo-#{index}.jpg","wb") do |file|
-            file.puts f.read
-          end
-
-          downloaded_images << "file: inline-#{current_folder}-photo-#{index}.jpg — alt: #{(image.match(/(?<=alt=")[^"]+/) || 'none')}\n"
-        end
-      end
-    end
-  end
-
-  # Remove Image tags
-  unless options[:base64_img]
-    page_body_html.gsub!(/<img.*?>/, '')
-  end
-
   # Replace h1 and h2 with h3
   page_body_html.gsub!(/<(\/?)h[12][^>]*>/, '<\1h3>')
 
@@ -147,6 +116,37 @@ unless page_body_html == nil
 
   # Wraps any block level text without tags on <p>
   page_body_html.gsub!(/(<\/(p|ul|h3)>)([^<]+?)(<(p|ul|h3)[^>]*>)/, '\1<p>\3</p>\4')
+
+  # Find and save images
+  images = page_body_html.scan(/<img.*?>/)
+  unless images == nil
+    images.each.with_index(1) do |image, index|
+      src = image.match(/(?<=src=")[^"]+/).to_s
+
+      if src.match(/https?:\/\//)
+        image_url = src
+      else
+        image_url = "#{uri.scheme}://#{uri.host}#{src}"
+      end
+
+      open(image_url) do |f|
+        if options[:base64_img]
+          page_body_html.sub!(/src=["']?(?!data)[^"'\s>]*["']?(\s|>)/, "src='data:image/jpeg;base64, #{Base64.encode64(f.read).gsub(/\n/, '')}'\\1")
+        else
+          File.open("inline-#{current_folder}-photo-#{index}.jpg","wb") do |file|
+            file.puts f.read
+          end
+
+          downloaded_images << "file: inline-#{current_folder}-photo-#{index}.jpg — alt: #{(image.match(/(?<=alt=")[^"]+/) || 'none')}\n"
+        end
+      end
+    end
+  end
+
+  # Remove Image tags
+  unless options[:base64_img]
+    page_body_html.gsub!(/<img.*?>/, '')
+  end
 
 end
 
