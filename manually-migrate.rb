@@ -3,13 +3,15 @@ require 'uri'
 require 'fileutils'
 require 'nokogiri'
 require 'optparse'
+require 'base64'
 
 
 # Adds support for optional flags to the script
 options = {
   :content_html_script => false,
   :copy_to_clipboard => true,
-  :original_url => nil
+  :original_url => nil,
+  :base64_img => false
 }
 
 OptionParser.new do |opts|
@@ -25,6 +27,10 @@ OptionParser.new do |opts|
 
   opts.on("-u", "--original-url [url]", "Original url to migrate without user input (default: user input)") do |v|
     options[:original_url] = v
+  end
+
+  opts.on("-b", "--base64-img [true]", TrueClass, "Encode <img> tags as base64 data (default: false)") do |v|
+    options[:base64_img] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 end.parse!
 
@@ -63,7 +69,7 @@ page_body_title = page.css("h1")[0].text
 page_body_description = page.css("h2")[0].text
 page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
 
-inline_images = []
+downloaded_images = []
 
 unless page_body_description == nil
   # Format Phone Numbers on Description
@@ -99,21 +105,27 @@ unless page_body_html == nil
         image_url = "#{uri.scheme}://#{uri.host}#{src}"
       end
 
-      inline_images << "file: inline-#{current_folder}-photo-#{index}.jpg — alt: #{(image.match(/(?<=alt=")[^"]+/) || 'none')}\n"
-
       open(image_url) do |f|
-       File.open("inline-#{current_folder}-photo-#{index}.jpg","wb") do |file|
-         file.puts f.read
-       end
+        if options[:base64_img]
+          page_body_html.sub!(/src=["']?(?!data)[^"'\s\/>]*["']?(\s|\/|>)/, "src='data:image/jpeg;base64, #{Base64.encode64(f.read).gsub(/\n/, '')}'\1")
+        else
+          File.open("inline-#{current_folder}-photo-#{index}.jpg","wb") do |file|
+            file.puts f.read
+          end
+
+          downloaded_images << "file: inline-#{current_folder}-photo-#{index}.jpg — alt: #{(image.match(/(?<=alt=")[^"]+/) || 'none')}\n"
+        end
       end
     end
   end
 
+  # Remove Image tags
+  unless options[:base64_img]
+    page_body_html.gsub!(/<img.*?>/, '')
+  end
+
   # Replace h1 and h2 with h3
   page_body_html.gsub!(/<(\/?)h[12][^>]*>/, '<\1h3>')
-
-  # Remove Image tags
-  page_body_html.gsub!(/<img.*?>/, '')
 
   # Remove Tel Links
   page_body_html.gsub!(/<a href="(tel:|\d)[^>]+>(.+?)<\/a>/, '\2')
@@ -178,8 +190,8 @@ notes = "###Original URL\n"\
         "#{page_body_title}\n\n"\
         "###Content HTML\n"\
         "#{content_html}\n\n"\
-        "###Inline Images\n"\
-        "#{inline_images.join('')}\n"\
+        "###Downloaded Images\n"\
+        "#{downloaded_images.join('')}\n"\
         "###Console Script\n"\
         "#{console_script}"
 
