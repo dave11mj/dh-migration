@@ -117,7 +117,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
 
   # Replaces any Find a doctor link with the correct url
-  page_body_html.gsub!(/(<a[^>]*)href="[^"]+?(?:\bfind\b|\bourdoctors\b)[^"]+?"([^>]*>[^<]*[Dd]octor[^<]*<\/a>)/, '/1href="http://www.dignityhealth.org/ourdoctors" target="_blank"/2')
+  page_body_html.gsub!(/<a[^>]*href="[^"]*(?:\bfind\b|\bourdoctors\b)[^"]*"[^>]*>([^<]*[Dd]octor[^<]*<\/a>)/, '<a href="http://www.dignityhealth.org/ourdoctors" target="_blank">\1')
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
