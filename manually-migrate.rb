@@ -107,10 +107,10 @@ unless page_body_html == nil
   # Remove Tel Links
   page_body_html.gsub!(/<a href="(tel:|\d)[^>]+>(.+?)<\/a>/, '\2')
 
-  # Format Phone Numbers
-  page_body_html.gsub!(/(?:\d{1}[[:space:]])?\(?(\d{3})\)?-?[[:space:]]?(\d{3})-?[[:space:]]?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+  # Normalizes phone numbers to use dot format
+  page_body_html.gsub!(/(?:\d{1}[[:space:]])?\(?(\d{3})\)?-?[[:space:]]?(\d{3})-?[[:space:]]?(\d{4})/, '\1.\2.\3')
 
-  # Exception regex for phone numbers already with dot format
+  # Wraps phone numbers on tel links and strong tags
   page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Remove Updated or Rev number
