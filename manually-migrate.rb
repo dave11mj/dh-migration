@@ -106,7 +106,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/(?:\d{1}[[:space:]])?\(?(\d{3})\)?-?[[:space:]]?(\d{3})-?[[:space:]]?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Exception regex for phone numbers already with dot format
-  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?.?(\d{3}).?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Remove Updated or Rev number
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
@@ -119,6 +119,9 @@ unless page_body_html == nil
 
   # Wraps any block level text without tags on <p>
   page_body_html.gsub!(/(<\/(p|ul|h3)>)([^<]+?)(<(p|ul|h3)[^>]*>)/, '\1<p>\3</p>\4')
+
+  # Replaces any Find a doctor link with the correct url
+  page_body_html.gsub!(/(<a[^>]*)href="[^"]+?(?:\bfind\b|\bourdoctors\b)[^"]+?"([^>]*>(?:Find)?[^<]*(?:a)?[^<]*[Dd]octor[^<]*<\/a>)/, '/1href="http://www.dignityhealth.org/ourdoctors" target="_blank"/2')
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
