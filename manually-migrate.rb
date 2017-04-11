@@ -73,7 +73,7 @@ downloaded_images = []
 
 unless page_body_description == nil
   # Format Phone Numbers on Description
-  page_body_description.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+  page_body_description.gsub!(/(?:\d{1}[[:space:]])?\(?(\d{3})\)?-?[[:space:]]?(\d{3})-?[[:space:]]?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Exception regex for phone numbers already with dot format
   page_body_description.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
@@ -100,7 +100,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/<a href="(tel:|\d)[^>]+>(.+?)<\/a>/, '\2')
 
   # Format Phone Numbers
-  page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)?-?\s?(\d{3})-?\s?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
+  page_body_html.gsub!(/(?:\d{1}[[:space:]])?\(?(\d{3})\)?-?[[:space:]]?(\d{3})-?[[:space:]]?(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
 
   # Exception regex for phone numbers already with dot format
   page_body_html.gsub!(/(?:\d{1}\s)?\(?(\d{3})\)\.(\d{3})\.(\d{4})/, '<strong><a href="tel:+1-\1-\2-\3">\1.\2.\3</a></strong>')
