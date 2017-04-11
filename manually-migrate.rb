@@ -54,6 +54,11 @@ page = Nokogiri::HTML(html.read)
 page.encoding = 'utf-8'
 
 page_head_title = page.css("title")[0].text
+
+if page_head_title == ''
+  page_head_title = page.css("h1")[0].text
+end
+
 page_head_description = page.at("meta[name=description]")
 
 unless page_head_description == nil
