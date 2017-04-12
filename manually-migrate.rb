@@ -92,8 +92,8 @@ unless page_body_html == nil
   # Remove IDs
   page_body_html.gsub!(/id="?[^"\s]*"?/, '')
 
-  # Remove <span> tags
-  page_body_html.gsub!(/(<\/?span[^>]+>)/, '')
+  # Remove <span> and <div> tags
+  page_body_html.gsub!(/(<\/?(span|div)[^>]*>)/, '')
 
   # Validates HTML for unclosed tags
   page_body_html = Nokogiri::HTML::DocumentFragment.parse(page_body_html).to_s
