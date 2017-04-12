@@ -167,7 +167,13 @@ styles = "<style>"\
           "@media (max-width: 750px) { .manually-migrated img { display:block; float: none; clear: both; margin: 20px auto; max-width: 100%; } } "\
           "</style>"
 
-content_html = "#{styles} <div class='manually-migrated'><p>#{page_body_description}</p>#{page_body_html}</div>"
+
+page_body_description_html = ""
+unless page_body_description == ''
+  page_body_description_html = "<p>#{page_body_description}</p>"
+end
+
+content_html = "#{styles} <div class='manually-migrated'>#{page_body_description_html}#{page_body_html}</div>"
 
 # Script used to open 'edit html' editor and paste content html inside of it
 if options[:content_html_script]
