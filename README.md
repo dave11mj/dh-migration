@@ -8,7 +8,7 @@ A ruby script to aid migrating legacy content from old URLs.
 - **`--original-url` alias[`-u`]:** Original url to migrate without user input (default: user input)
 - **`--base64-img` alias[`-b`]:** Encode \<img\> tags as base64 data (default: false)
 - **`--update` alias[`-e`]:** Updates migration script (default: false)
-- ** `--parse-local` alias[`-p`]:** Parses from the local html file parse-option.html (default: false)
+- **`--parse-local` alias[`-p`]:** Parses from the local html file parse-option.html (default: false)
 
 ### Guidelines enforced by script
 - `<h2>` header directly under `<h1>` should be regular text size
