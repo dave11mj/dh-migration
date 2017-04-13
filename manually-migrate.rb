@@ -126,6 +126,9 @@ else
   page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
 end
 
+# Removes <script> tags
+page.css('script').remove
+
 downloaded_images = []
 
 unless page_body_description == nil
