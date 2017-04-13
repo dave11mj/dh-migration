@@ -88,6 +88,9 @@ page.xpath('@style|.//@style').remove
 # Removes align attributes
 page.xpath('@align|.//@align').remove
 
+# Removes <script> tags
+page.css('script').remove
+
 page_body_title = page.css("h1")[0].text
 page_body_description = page.css("h2")[0].text
 page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
