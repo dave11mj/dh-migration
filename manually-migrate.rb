@@ -11,7 +11,8 @@ options = {
   :content_html_script => false,
   :copy_to_clipboard => true,
   :original_url => nil,
-  :base64_img => false
+  :base64_img => false,
+  :update => false
 }
 
 OptionParser.new do |opts|
@@ -32,7 +33,21 @@ OptionParser.new do |opts|
   opts.on("-b", "--base64-img [true]", TrueClass, "Encode <img> tags as base64 data (default: false)") do |v|
     options[:base64_img] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
+
+  opts.on("-e", "--update [true]", TrueClass, "Updates migration script (default: false)") do |v|
+    options[:update] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+  end
 end.parse!
+
+if options[:update] == true
+  puts 'Updating migration script'
+  open('https://raw.githubusercontent.com/dave11mj/dh-migration/master/manually-migrate.rb') do |f|
+    File.open('manually-migrate.rb','w') do |file|
+      file.puts f.read
+    end
+  end
+  exit
+end
 
 if options[:original_url] == nil
   print "Original url: "
