@@ -12,7 +12,8 @@ options = {
   :copy_to_clipboard => true,
   :original_url => nil,
   :base64_img => false,
-  :update => false
+  :update => false,
+  :parse_local => false
 }
 
 OptionParser.new do |opts|
@@ -37,6 +38,10 @@ OptionParser.new do |opts|
   opts.on("-e", "--update [true]", TrueClass, "Updates migration script (default: false)") do |v|
     options[:update] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
+
+  opts.on("-p", "--parse-local [true]", TrueClass, "Parses pasted content (default: false)") do |v|
+    options[:parse_local] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+  end  
 end.parse!
 
 if options[:update] == true
@@ -49,37 +54,56 @@ if options[:update] == true
   exit
 end
 
-if options[:original_url] == nil
-  print "Original url: "
-  original_url = STDIN.gets.strip
-else
-  original_url = options[:original_url]
+if options[:parse_local] == true
+    print "html to parse     "
+    original_html = File.open("parse-option.html")
+    page = Nokogiri::HTML(original_html.read)
+    FileUtils::mkdir_p "./downloads/parse_local"
+    Dir.chdir "./downloads/parse_local"
 end
 
-uri = URI::parse(original_url)
+unless options[:parse_local] == true
 
-FileUtils::mkdir_p "./downloads#{uri.path}"
+  if options[:original_url] == nil
+    print "Original url: "
+    original_url = STDIN.gets.strip
+  else
+    original_url = options[:original_url]
+  end
 
-Dir.chdir "./downloads#{uri.path}"
+  uri = URI::parse(original_url)
 
-current_folder = uri.path.split('/').last
+  FileUtils::mkdir_p "./downloads#{uri.path}"
 
-html = open(original_url)
-page = Nokogiri::HTML(html.read)
-page.encoding = 'utf-8'
+  Dir.chdir "./downloads#{uri.path}"
 
-page_head_title = page.css("title")[0].text
+  current_folder = uri.path.split('/').last
 
-if page_head_title == ''
+  html = open(original_url)
+  page = Nokogiri::HTML(html.read)
+  page.encoding = 'utf-8'
+
+end
+
+
+unless page.css("title").to_s == ''
+  puts page.css("title").to_s
+  page_head_title = page.css("title")[0].text
+end
+
+page_head_title = ''
+unless page.css("h1").to_s == ''
   page_head_title = page.css("h1")[0].text
 end
 
 page_head_description = page.at("meta[name=description]")
 
-unless page_head_description == nil
+if page_head_description != nil
   page_head_description = page_head_description['content']
-else
+elsif page.css("h2").to_s != ''
   page_head_description = page.css("h2")[0].text
+else
+  page_head_description = ''
 end
 
 # Removes inline styles
@@ -88,9 +112,19 @@ page.xpath('@style|.//@style').remove
 # Removes align attributes
 page.xpath('@align|.//@align').remove
 
-page_body_title = page.css("h1")[0].text
-page_body_description = page.css("h2")[0].text
-page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
+unless page.css("h1").to_s == ''
+  page_body_title = page.css("h1")[0].text
+end
+
+unless page.css("h2").to_s == ''
+  page_body_description = page.css("h2")[0].text
+end
+
+if options[:parse_local]
+  page_body_html = page.to_s.gsub!(/[\n\t\r]+/, '')
+else
+  page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
+end
 
 downloaded_images = []
 
@@ -105,10 +139,12 @@ end
 unless page_body_html == nil
 
   # Remove IDs
-  page_body_html.gsub!(/id="?[^"\s]*"?/, '')
+  # page_body_html.gsub!(/id="?[^"\s]*"?/, '')
 
-  # Remove <span> and <div> tags
-  page_body_html.gsub!(/(<\/?(span|div)[^>]*>)/, '')
+  if options[:parse_local] != true
+    # Remove <span> and <div> tags
+    page_body_html.gsub!(/(<\/?(span|div)[^>]*>)/, '')
+  end
 
   # Validates HTML for unclosed tags
   page_body_html = Nokogiri::HTML::DocumentFragment.parse(page_body_html).to_s
@@ -132,11 +168,11 @@ unless page_body_html == nil
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
 
   # Replaces any Find a doctor link with the correct url
-  page_body_html.gsub!(/<a[^>]*href="[^"]*(?:\bfind\b|\bourdoctors\b)[^"]*"[^>]*>([^<]*[Dd]octor[^<]*<\/a>)/, '<a href="http://www.dignityhealth.org/ourdoctors" target="_blank">\1')
+  page_body_html.gsub!(/<a[^>]*href="[^"]*(?:\bfind\b|\bourdoctors\b)[^"]*"[^>]*>([^<]*[Dd]octor[^<]*<\/a>)/, '<a href="http://www.dignityhealth.org/ourdoctors">\1')
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
-  unless images == nil
+  unless images == nil or options[:parse_local] == true
     images.each.with_index(1) do |image, index|
       src = image.match(/(?<=src=")[^"]+/).to_s
 
@@ -205,12 +241,16 @@ else
   console_content_html_script = ""
 end
 
-console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
-                "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
-                "jQuery(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{page_head_description.gsub(/'/, "\\\\'")}');\n"\
-                "jQuery(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
-                "jQuery(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
-                "#{console_content_html_script}"
+console_script = ""
+
+if options[:parse_local] == false
+  console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
+                  "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
+                  "jQuery(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{page_head_description.gsub(/'/, "\\\\'")}');\n"\
+                  "jQuery(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
+                  "jQuery(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
+                  "#{console_content_html_script}"
+end
 
 notes = "###Original URL\n"\
         "#{original_url}\n\n"\
