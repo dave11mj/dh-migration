@@ -220,8 +220,10 @@ unless page_body_html == nil
   # Removes Duplicate strong tags
   page_body_html.gsub!(/<(strong)[^>]*>\s*?<\1[^>]*>(.*?)<\/\1>\s*?<\/\1>/, '<\1>\2</\1>')
 
-  # Remove Empty tags that are not iframe, or wrapping an image
-  page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>([[:space:]]|&nbsp;|<(?!img)[^>]+>)*<\/\1>/, '')
+  if @options[:parse_local] != true
+    # Remove Empty tags that are not iframe, or wrapping an image
+    page_body_html.gsub!(/<(?!iframe)([^>\s]+)([^>]+)?>([[:space:]]|&nbsp;|<(?!img)[^>]+>)*<\/\1>/, '')
+  end
 
   # Wraps any block level text without tags on <p>
   page_body_html.gsub!(/(<\/(p|ul|h3)>)([^<]+?)(<(p|ul|h3)[^>]*>)/, '\1<p>\3</p>\4')
