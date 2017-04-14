@@ -1,6 +1,9 @@
 ## Manual migration script
 A ruby script to aid migrating legacy content from old URLs.
 
+### Dependencies
+_Note: To use the `--new-url` / `-n` flag you first need to need install `launchy` by running `sudo gem install launchy`_
+
 ### Flags / Options
 - **`--help` alias[`-h`]:** Provides available options and usages on the command line
 - **`--content-html-script` alias[`-o`]:** Adds script to paste HTML inside content editor (default: false)
