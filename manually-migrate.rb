@@ -7,10 +7,11 @@ require 'base64'
 
 
 # Adds support for optional flags to the script
-options = {
+@options = {
   :content_html_script => false,
   :copy_to_clipboard => true,
   :original_url => nil,
+  :new_url => nil,
   :base64_img => false,
   :update => false,
   :parse_local => false
@@ -20,31 +21,38 @@ OptionParser.new do |opts|
   opts.banner = "Usage: manually-migrate.rb [options]"
 
   opts.on("-o", "--content-html-script [true]", TrueClass, "Adds script to paste HTML inside content editor (default: false)") do |v|
-    options[:content_html_script] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+    @options[:content_html_script] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 
   opts.on("-c", "--copy-to-clipboard [true]", TrueClass, "Copies console script to clipboard (default: true)") do |v|
-    options[:copy_to_clipboard] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+    @options[:copy_to_clipboard] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 
   opts.on("-u", "--original-url [url]", "Original url to migrate without user input (default: user input)") do |v|
-    options[:original_url] = v
+    @options[:original_url] = v
+  end
+
+  opts.on("-n", "--new-url [url]", "New url to open editing admin page (default: nothing)") do |v|
+    @options[:new_url] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+    if @options[:new_url] != true
+      @options[:new_url] = v
+    end
   end
 
   opts.on("-b", "--base64-img [true]", TrueClass, "Encode <img> tags as base64 data (default: false)") do |v|
-    options[:base64_img] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+    @options[:base64_img] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 
   opts.on("-e", "--update [true]", TrueClass, "Updates migration script (default: false)") do |v|
-    options[:update] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+    @options[:update] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 
   opts.on("-p", "--parse-local [true]", TrueClass, "Parses pasted content (default: false)") do |v|
-    options[:parse_local] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
-  end  
+    @options[:parse_local] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+  end
 end.parse!
 
-if options[:update] == true
+if @options[:update] == true
   puts 'Updating migration script'
   open('https://raw.githubusercontent.com/dave11mj/dh-migration/master/manually-migrate.rb') do |f|
     File.open('manually-migrate.rb','w') do |file|
@@ -54,7 +62,7 @@ if options[:update] == true
   exit
 end
 
-if options[:parse_local] == true
+if @options[:parse_local] == true
     print "html to parse     "
     original_html = File.open("parse-option.html")
     page = Nokogiri::HTML(original_html.read)
@@ -62,13 +70,19 @@ if options[:parse_local] == true
     Dir.chdir "./downloads/parse_local"
 end
 
-unless options[:parse_local] == true
+unless @options[:parse_local] == true
 
-  if options[:original_url] == nil
+  if @options[:original_url] == nil
     print "Original url: "
     original_url = STDIN.gets.strip
   else
-    original_url = options[:original_url]
+    original_url = @options[:original_url]
+  end
+
+  # Asks for New URL if new url option is true
+  if @options[:new_url] == true
+    print "New url: "
+    @options[:new_url] = STDIN.gets.strip
   end
 
   uri = URI::parse(original_url)
@@ -87,23 +101,22 @@ end
 
 
 unless page.css("title").to_s == ''
-  puts page.css("title").to_s
-  page_head_title = page.css("title")[0].text
+  @page_head_title = page.css("title")[0].text
 end
 
-page_head_title = ''
+@page_head_title = ''
 unless page.css("h1").to_s == ''
-  page_head_title = page.css("h1")[0].text
+  @page_head_title = page.css("h1")[0].text
 end
 
-page_head_description = page.at("meta[name=description]")
+@page_head_description = page.at("meta[name=description]")
 
-if page_head_description != nil
-  page_head_description = page_head_description['content']
+if @page_head_description != nil
+  @page_head_description = @page_head_description['content']
 elsif page.css("h2").to_s != ''
-  page_head_description = page.css("h2")[0].text
+  @page_head_description = page.css("h2")[0].text
 else
-  page_head_description = ''
+  @page_head_description = ''
 end
 
 # Removes inline styles
@@ -113,14 +126,14 @@ page.xpath('@style|.//@style').remove
 page.xpath('@align|.//@align').remove
 
 unless page.css("h1").to_s == ''
-  page_body_title = page.css("h1")[0].text
+  @page_body_title = page.css("h1")[0].text
 end
 
 unless page.css("h2").to_s == ''
   page_body_description = page.css("h2")[0].text
 end
 
-if options[:parse_local]
+if @options[:parse_local]
   page_body_html = page.to_s.gsub!(/[\n\t\r]+/, '')
 else
   page_body_html = page.css('span#HTML_CONTENT')[0].to_s.gsub!(/[\n\r]+/, '')
@@ -144,7 +157,7 @@ unless page_body_html == nil
   # Remove IDs
   # page_body_html.gsub!(/id="?[^"\s]*"?/, '')
 
-  if options[:parse_local] != true
+  if @options[:parse_local] != true
     # Remove <span> and <div> tags
     page_body_html.gsub!(/(<\/?(span|div)[^>]*>)/, '')
   end
@@ -175,7 +188,7 @@ unless page_body_html == nil
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
-  unless images == nil or options[:parse_local] == true
+  unless images == nil or @options[:parse_local] == true
     images.each.with_index(1) do |image, index|
       src = image.match(/(?<=src=")[^"]+/).to_s
 
@@ -186,7 +199,7 @@ unless page_body_html == nil
       end
 
       open(image_url) do |f|
-        if options[:base64_img]
+        if @options[:base64_img]
           page_body_html.sub!(/src=["']?(?!data)[^"'\s>]*["']?(\s|>)/, "src='data:image/jpeg;base64, #{Base64.encode64(f.read).gsub(/\n/, '')}'\\1")
         else
           File.open("inline-#{current_folder}-photo-#{index}.jpg","wb") do |file|
@@ -200,7 +213,7 @@ unless page_body_html == nil
   end
 
   # Remove Image tags
-  unless options[:base64_img]
+  unless @options[:base64_img]
     page_body_html.gsub!(/<img.*?>/, '')
   end
 
@@ -227,48 +240,76 @@ unless page_body_description == ''
   page_body_description_html = "<p>#{page_body_description}</p>"
 end
 
-content_html = "#{styles} <div class='manually-migrated'>#{page_body_description_html}#{page_body_html}</div>"
+@main_content_html = "#{styles} <div class='manually-migrated'>#{page_body_description_html}#{page_body_html}</div>"
 
-# Script used to open 'edit html' editor and paste content html inside of it
-if options[:content_html_script]
-  console_content_html_script = "jQuery(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
-  "(function updateIframe() { "\
-      "var $contentHtml = jQuery('#jqueryModalDialogsFrame').contents().find('#scContentIframeId0').contents().find('textarea'); "\
-      "if($contentHtml.length < 1) { "\
-          "setTimeout(updateIframe, 500); "\
-      "} else { "\
-        "$contentHtml.val('#{content_html.gsub(/'/, "\\\\'")}');"\
-      "} "\
-  "})();\n"
-else
-  console_content_html_script = ""
+def console_script_generator(new_url = false)
+
+  jQueryFind = (new_url) ? "jQuery('#scPageExtendersForm iframe').contents().find" : "jQuery"
+
+  tmp_script = ""
+  # Script used to open 'edit html' editor and paste content html inside of it
+  if @options[:content_html_script]
+    console_content_html_script = "#{jQueryFind}(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
+    "(function updateIframe() { "\
+        "var $contentHtml = jQuery('#jqueryModalDialogsFrame').contents().find('#scContentIframeId0').contents().find('textarea'); "\
+        "var attempts = 1; "\
+        "if($contentHtml.length < 1 && attempts <= 60) { "\
+            "setTimeout(updateIframe, 500); "\
+            "console.log('attempts to fill html', attempts); "\
+            "attempts++; "\
+        "} else if (attempts <= 60) { "\
+          "console.log('Success ! Pasting HTML'); "\
+          "$contentHtml.val('#{@main_content_html.gsub(/'/, "\\\\'")}');"\
+        "} else { "\
+          "console.log('Waited for too long.. Stopping attempts'); "\
+        "} "\
+    "})();\n"
+  else
+    console_content_html_script = ""
+  end
+
+  tmp_script = "#{jQueryFind}(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{@page_body_title.gsub(/'/, "\\\\'")}');\n"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{@page_head_title.gsub(/'/, "\\\\'")}');\n"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{@page_head_description.gsub(/'/, "\\\\'")}');\n"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
+                  "#{console_content_html_script}"
+
+  if new_url
+    tmp_script << "jQuery('#main-nav').css('visibility', 'hidden');"
+  end
+
+  return tmp_script
 end
 
 console_script = ""
 
-if options[:parse_local] == false
-  console_script = "jQuery(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{page_body_title.gsub(/'/, "\\\\'")}');\n"\
-                  "jQuery(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{page_head_title.gsub(/'/, "\\\\'")}');\n"\
-                  "jQuery(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{page_head_description.gsub(/'/, "\\\\'")}');\n"\
-                  "jQuery(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
-                  "jQuery(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
-                  "#{console_content_html_script}"
+if @options[:parse_local] == false
+  console_script = console_script_generator
+end
+
+new_url_console_script = ""
+new_url_notes = ""
+
+if @options[:new_url] != nil
+  new_url_console_script = console_script_generator(true)
+  new_url_notes = "\n\n###New URL Console Script\n#{new_url_console_script}\n"
 end
 
 notes = "###Original URL\n"\
         "#{original_url}\n\n"\
         "###PageHeadTitle\n"\
-        "#{page_head_title}\n\n"\
+        "#{@page_head_title}\n\n"\
         "###PageHeadDescription\n"\
-        "#{page_head_description}\n\n"\
+        "#{@page_head_description}\n\n"\
         "###Content Title\n"\
-        "#{page_body_title}\n\n"\
+        "#{@page_body_title}\n\n"\
         "###Content HTML\n"\
-        "#{content_html}\n\n"\
+        "#{@main_content_html}\n\n"\
         "###Downloaded Images\n"\
         "#{downloaded_images.join('')}\n"\
         "###Console Script\n"\
-        "#{console_script}"
+        "#{console_script}#{new_url_notes}\n"
 
 puts "\n#{notes}\n"
 
@@ -281,13 +322,30 @@ def pbcopy(input)
   str
 end
 
-if options[:copy_to_clipboard]
+if @options[:copy_to_clipboard]
   begin
-    pbcopy(console_script)
-    puts "Copied Console Script to clipboard\n\n"
+    if @options[:new_url] != nil
+      pbcopy(new_url_console_script)
+      puts "Copied New URL Console Script to clipboard\n\n"
+    else
+      pbcopy(console_script)
+      puts "Copied Console Script to clipboard\n\n"
+    end
   rescue
     puts "Done\n\n"
   end
 else
   puts "Done\n\n"
+end
+
+# Open Admin Edit page if new url is provided
+if @options[:new_url] != nil && @options[:parse_local] == false
+  begin
+    require 'launchy'
+    new_url_uri = URI::parse(@options[:new_url])
+    Launchy.open("https://slot2.dev.dignityhealth.org#{new_url_uri.path}?sc_mode=edit&sc_ce=1")
+  rescue
+    puts 'It seems you are missing a dependency. To use the --new-url flag'
+    puts 'Please run `sudo gem install launchy`'
+  end
 end

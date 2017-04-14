@@ -6,6 +6,7 @@ A ruby script to aid migrating legacy content from old URLs.
 - **`--content-html-script` alias[`-o`]:** Adds script to paste HTML inside content editor (default: false)
 - **`--copy-to-clipboard` alias[`-c`]:** Copies console script to clipboard (default: true)
 - **`--original-url` alias[`-u`]:** Original url to migrate without user input (default: user input)
+- **`--new-url` alias[`-n`]:** New url to open editing admin page (default: nothing)
 - **`--base64-img` alias[`-b`]:** Encode \<img\> tags as base64 data (default: false)
 - **`--update` alias[`-e`]:** Updates migration script (default: false)
 - **`--parse-local` alias[`-p`]:** Parses from the local html file parse-option.html (default: false)
