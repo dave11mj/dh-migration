@@ -190,7 +190,7 @@ unless page_body_html == nil
   page_body_html.gsub!(/\((Updated|Rev)\.? \d+\.?\)/, '')
 
   # Replaces any Find a doctor link with the correct url
-  page_body_html.gsub!(/<a[^>]*href="[^"]*(?:\bfind\b|\bourdoctors\b)[^"]*"[^>]*>([^<]*[Dd]octor[^<]*<\/a>)/, '<a href="http://www.dignityhealth.org/ourdoctors">\1')
+  page_body_html.gsub!(/<a[^>]*href="[^"]*(?:\bfind\b|\bourdoctors\b)[^"]*"[^>]*>([^<]*[Dd]octor[^<]*<\/a>)/, '<a href="~/link.aspx?_id=33D04E30953B4568809EDDDB52367C62&amp;_z=z" target="_blank">\1')
 
   # Find and save images
   images = page_body_html.scan(/<img.*?>/)
@@ -255,7 +255,7 @@ def console_script_generator(new_url = false)
   jQueryFind = (new_url) ? "jQuery('#scPageExtendersForm iframe').contents().find" : "jQuery"
 
   tmp_script = ""
-  br = (@options[:json_encode] == true) ? '' : '\n'
+  br = (@options[:json_encode] == true) ? '' : "\n"
   # Script used to open 'edit html' editor and paste content html inside of it
   if @options[:content_html_script]
     console_content_html_script = "#{jQueryFind}(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
@@ -308,7 +308,7 @@ if @options[:new_url] != nil
   new_url_notes = "\n\n###New URL Console Script\n#{new_url_console_script}\n"
 
   new_url_uri = URI::parse(@options[:new_url])
-  edit_page_url = "https://slot2.dev.dignityhealth.org/sitecore/content/Service%20Areas#{new_url_uri.path}?sc_mode=edit&sc_ce=1"
+  edit_page_url = "https://slot2.dev.dignityhealth.org#{new_url_uri.path}?sc_mode=edit&sc_ce=1"
   edit_page_notes = "\n\n###Edit Page URL\n#{edit_page_url}\n"
 end
 
