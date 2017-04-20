@@ -308,7 +308,7 @@ if @options[:new_url] != nil
   new_url_notes = "\n\n###New URL Console Script\n#{new_url_console_script}\n"
 
   new_url_uri = URI::parse(@options[:new_url])
-  edit_page_url = "https://slot2.dev.dignityhealth.org#{new_url_uri.path}?sc_mode=edit&sc_ce=1"
+  edit_page_url = "https://slot2.dev.dignityhealth.org/sitecore/content/Service%20Areas#{new_url_uri.path}?sc_mode=edit&sc_ce=1"
   edit_page_notes = "\n\n###Edit Page URL\n#{edit_page_url}\n"
 end
 
