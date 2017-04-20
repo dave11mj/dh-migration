@@ -30,7 +30,10 @@ Temporary Items
 downloads/
 
 # Ignore video tutorial
-tutorial-for-manually-migrate.mov
+**/*.mov
 
 # Ignore temporary ruby file used for debug
 tmp.rb
+
+# Ignore configurations for batch-migrate script
+config-batch-migrate.yml

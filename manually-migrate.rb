@@ -4,6 +4,7 @@ require 'fileutils'
 require 'nokogiri'
 require 'optparse'
 require 'base64'
+require 'json'
 
 
 # Adds support for optional flags to the script
@@ -14,7 +15,8 @@ require 'base64'
   :new_url => nil,
   :base64_img => false,
   :update => false,
-  :parse_local => false
+  :parse_local => false,
+  :json_encode => false
 }
 
 OptionParser.new do |opts|
@@ -49,6 +51,10 @@ OptionParser.new do |opts|
 
   opts.on("-p", "--parse-local [true]", TrueClass, "Parses pasted content (default: false)") do |v|
     @options[:parse_local] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
+  end
+
+  opts.on("-j", "--json-encode [true]", TrueClass, "Generate notes in json format (default: false)") do |v|
+    @options[:json_encode] = v.to_s.downcase == 'true' || v.to_s.downcase == ''
   end
 end.parse!
 
@@ -249,6 +255,7 @@ def console_script_generator(new_url = false)
   jQueryFind = (new_url) ? "jQuery('#scPageExtendersForm iframe').contents().find" : "jQuery"
 
   tmp_script = ""
+  br = (@options[:json_encode] == true) ? '' : '\n'
   # Script used to open 'edit html' editor and paste content html inside of it
   if @options[:content_html_script]
     console_content_html_script = "#{jQueryFind}(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
@@ -271,14 +278,14 @@ def console_script_generator(new_url = false)
   end
 
   tmp_script = "#{jQueryFind}(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{@page_body_title.gsub(/'/, "\\\\'")}');\n"\
-                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{@page_head_title.gsub(/'/, "\\\\'")}');\n"\
-                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{@page_head_description.gsub(/'/, "\\\\'")}');\n"\
-                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);\n"\
-                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);\n"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{@page_head_title.gsub(/'/, "\\\\'")}');#{br}"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{@page_head_description.gsub(/'/, "\\\\'")}');#{br}"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);#{br}"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);#{br}"\
                   "#{console_content_html_script}"
 
   if new_url
-    tmp_script << "jQuery('#main-nav').css('visibility', 'hidden');"
+    tmp_script << "jQuery('#main-nav, #mobile-nav').css('visibility', 'hidden');"
   end
 
   return tmp_script
@@ -293,29 +300,53 @@ end
 new_url_console_script = ""
 new_url_notes = ""
 
+edit_page_url = ""
+edit_page_notes = ""
+
 if @options[:new_url] != nil
   new_url_console_script = console_script_generator(true)
   new_url_notes = "\n\n###New URL Console Script\n#{new_url_console_script}\n"
+
+  new_url_uri = URI::parse(@options[:new_url])
+  edit_page_url = "https://slot2.dev.dignityhealth.org#{new_url_uri.path}?sc_mode=edit&sc_ce=1"
+  edit_page_notes = "\n\n###Edit Page URL\n#{edit_page_url}\n"
 end
 
-notes = "###Original URL\n"\
-        "#{original_url}\n\n"\
-        "###PageHeadTitle\n"\
-        "#{@page_head_title}\n\n"\
-        "###PageHeadDescription\n"\
-        "#{@page_head_description}\n\n"\
-        "###Content Title\n"\
-        "#{@page_body_title}\n\n"\
-        "###Content HTML\n"\
-        "#{@main_content_html}\n\n"\
-        "###Downloaded Images\n"\
-        "#{downloaded_images.join('')}\n"\
-        "###Console Script\n"\
-        "#{console_script}#{new_url_notes}\n"
+if @options[:json_encode] == true
+  json_notes = {
+    :original_url => original_url,
+    :edit_page_url => edit_page_url,
+    :page_head_title => @page_head_title,
+    :page_head_description => @page_head_description,
+    :page_body_title => @page_body_title,
+    :main_content_html => @main_content_html,
+    :downloaded_images => downloaded_images.join(''),
+    :console_script => "#{console_script}#{new_url_console_script}"
+  }
 
-puts "\n#{notes}\n"
+  puts JSON.generate(json_notes)
 
-File.open("notes.md", 'w') { |file| file.write(notes) }
+  File.open("notes.json", 'w') { |file| file.write(JSON.pretty_generate(json_notes)) }
+else
+  notes = "###Original URL\n"\
+          "#{original_url}#{edit_page_notes}\n\n"\
+          "###PageHeadTitle\n"\
+          "#{@page_head_title}\n\n"\
+          "###PageHeadDescription\n"\
+          "#{@page_head_description}\n\n"\
+          "###Content Title\n"\
+          "#{@page_body_title}\n\n"\
+          "###Content HTML\n"\
+          "#{@main_content_html}\n\n"\
+          "###Downloaded Images\n"\
+          "#{downloaded_images.join('')}\n"\
+          "###Console Script\n"\
+          "#{console_script}#{new_url_notes}\n"
+
+  puts "\n#{notes}\n"
+
+  File.open("notes.md", 'w') { |file| file.write(notes) }
+end
 
 # Copies to clipboard on Macs
 def pbcopy(input)
@@ -324,7 +355,7 @@ def pbcopy(input)
   str
 end
 
-if @options[:copy_to_clipboard]
+if @options[:copy_to_clipboard] && @options[:json_encode] == false
   begin
     if @options[:new_url] != nil
       pbcopy(new_url_console_script)
@@ -336,16 +367,15 @@ if @options[:copy_to_clipboard]
   rescue
     puts "Done\n\n"
   end
-else
+elsif @options[:json_encode] == false
   puts "Done\n\n"
 end
 
 # Open Admin Edit page if new url is provided
-if @options[:new_url] != nil && @options[:parse_local] == false
+if @options[:new_url] != nil && @options[:parse_local] == false && @options[:json_encode] == false
   begin
     require 'launchy'
-    new_url_uri = URI::parse(@options[:new_url])
-    Launchy.open("https://slot2.dev.dignityhealth.org#{new_url_uri.path}?sc_mode=edit&sc_ce=1")
+    Launchy.open(edit_page_url)
   rescue
     puts 'It seems you are missing a dependency. To use the --new-url flag'
     puts 'Please run `sudo gem install launchy`'
