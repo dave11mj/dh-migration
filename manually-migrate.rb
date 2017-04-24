@@ -280,6 +280,7 @@ def console_script_generator(new_url = false)
   tmp_script = "#{jQueryFind}(\".scEditorFieldLabel:contains('Title'), .scEditorFieldLabel:contains('Header')\").next().children('input').val('#{@page_body_title.gsub(/'/, "\\\\'")}');\n"\
                   "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadTitle:')\").next().children('input').val('#{@page_head_title.gsub(/'/, "\\\\'")}');#{br}"\
                   "#{jQueryFind}(\".scEditorFieldLabel:contains('PageHeadDescription')\").next().children('input').val('#{@page_head_description.gsub(/'/, "\\\\'")}');#{br}"\
+                  "#{jQueryFind}(\".scEditorFieldLabel:contains('Display name')\").next().children('input').val('#{@page_head_title.gsub(/'/, "\\\\'")}');#{br}"\
                   "#{jQueryFind}(\".scEditorFieldLabel:contains('PageAddToSitemap')\").prev().children('input').prop('checked', true);#{br}"\
                   "#{jQueryFind}(\".scEditorFieldLabel:contains('PageShowInSearch')\").prev().children('input').prop('checked', true);#{br}"\
                   "#{console_content_html_script}"
