@@ -237,7 +237,7 @@ unless page_body_html == nil
 end
 
 styles = "<style>"\
-          ".manually-migrated ul { padding-left: 40px; } "\
+          ".manually-migrated ul, manually-migrated ol { padding-left: 40px; } "\
           ".manually-migrated img { display:block; float: right; clear: right; margin: 0 0 20px 20px; } "\
           "@media (max-width: 750px) { .manually-migrated img { display:block; float: none; clear: both; margin: 20px auto; max-width: 100%; } } "\
           "</style>"
