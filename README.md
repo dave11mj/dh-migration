@@ -2,6 +2,7 @@
 A ruby script to aid migrating legacy content from old URLs.
 
 ### Dependencies
+_Note: To use the migration script you will need to install `Nokogiri` and `OptionParser` by running `sudo gem install nokogiri OptionParser`_
 _Note: To use the `--new-url` / `-n` flag you first need to need install `launchy` by running `sudo gem install launchy`_
 
 ### Flags / Options
