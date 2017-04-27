@@ -131,10 +131,12 @@ page.xpath('@style|.//@style').remove
 # Removes align attributes
 page.xpath('@align|.//@align').remove
 
+@page_body_title = ''
 unless page.css("h1").to_s == ''
   @page_body_title = page.css("h1")[0].text
 end
 
+@page_body_description = ''
 unless page.css("h2").to_s == ''
   page_body_description = page.css("h2")[0].text
 end
