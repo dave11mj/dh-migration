@@ -260,7 +260,7 @@ def console_script_generator(new_url = false)
   br = (@options[:json_encode] == true) ? '' : "\n"
   # Script used to open 'edit html' editor and paste content html inside of it
   if @options[:content_html_script]
-    console_content_html_script = "#{jQueryFind}(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").trigger('click'); "\
+    console_content_html_script = "#{jQueryFind}(\"#Section_Content\").next().find(\".scContentButton:contains('Edit HTML')\").eq(0).trigger('click'); "\
     "(function updateIframe() { "\
         "var $contentHtml = jQuery('#jqueryModalDialogsFrame').contents().find('#scContentIframeId0').contents().find('textarea'); "\
         "var attempts = 1; "\
