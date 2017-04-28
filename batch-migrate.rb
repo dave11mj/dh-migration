@@ -134,6 +134,9 @@ end
 
       # switch back to the main document
       @browser.switch_to.default_content
+
+      # Hide Main Navigation
+      @browser.execute_script('jQuery("#main-nav").css("visibility", "hidden")')
     end
 
     # Open a window with old URL for reference
